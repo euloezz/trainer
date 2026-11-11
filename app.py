@@ -102,4 +102,102 @@ if "messages" not in st.session_state:
 
 if "last_topic" not in st.session_state:
     st.session_state.last_topic = "Visão Geral de Alta Performance"
-if "last_image" not in st.session_
+if "last_image" not in st.session_state:
+    st.session_state.last_image = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000&auto=format&fit=crop"
+
+# --- INTERFACE PRINCIPAL DO SITE ---
+st.markdown("<h1 style='text-align: center; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>⚡ NEXUS FIT TRAINING</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #9ca3af;'>Plataforma inteligente de treinamento biomecânico e consultoria física.</p>", unsafe_allow_html=True)
+st.divider()
+
+# --- WIDGET POP-UP FLUTUANTE (FIXO NO CANTO INFERIOR DIREITO VIA CSS) ---
+with st.popover("💬 Suporte de Personal Online"):
+    st.markdown("### 🦾 Chatbot Personal Trainer")
+    st.markdown("<p style='font-size: 12px; color: #10b981; margin-top: -10px;'>● online agora</p>", unsafe_allow_html=True)
+    st.divider()
+    
+    st.markdown('<div class="whatsapp-chat-bg">', unsafe_allow_html=True)
+    chat_container = st.container(height=350)
+    
+    with chat_container:
+        for message in st.session_state.messages:
+            if message["role"] != "system":
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    prompt = st.chat_input("Digite sua dúvida de treino...")
+    if prompt:
+        if not api_key:
+            st.error("Insira sua Chave de API na barra lateral!")
+        else:
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with chat_container:
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+
+            with chat_container:
+                with st.chat_message("assistant"):
+                    message_placeholder = st.empty()
+                    message_placeholder.markdown("Analisando...")
+                    
+                    try:
+                        client = OpenAI(
+                            api_key=api_key, 
+                            base_url=endpoint,
+                            default_query={"api-version": api_version} if api_version else None
+                        )
+                        response = client.chat.completions.create(
+                            model=model_name,
+                            messages=st.session_state.messages,
+                            stream=True
+                        )
+                        
+                        full_response = ""
+                        for chunk in response:
+                            if chunk.choices[0].delta.content is not None:
+                                full_response += chunk.choices[0].delta.content
+                                message_placeholder.markdown(full_response + "▌")
+                        
+                        message_placeholder.markdown(full_response)
+                        st.session_state.messages.append({"role": "assistant", "content": full_response})
+                        
+                        # Atualiza dinamicamente o painel de imagens ao lado
+                        p_lower = prompt.lower()
+                        st.session_state.last_topic = prompt[:45] + "..."
+                        if "costas" in p_lower or "puxada" in p_lower or "dorsal" in p_lower:
+                            st.session_state.last_image = "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1000&auto=format&fit=crop"
+                        elif "perna" in p_lower or "agachamento" in p_lower or "quadriceps" in p_lower:
+                            st.session_state.last_image = "https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=1000&auto=format&fit=crop"
+                        elif "peito" in p_lower or "supino" in p_lower:
+                            st.session_state.last_image = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop"
+                        
+                        st.rerun()
+                        
+                    except Exception as e:
+                        message_placeholder.error(f"Erro na API do Foundry: {e}")
+
+# --- ÁREA DINÂMICA PRINCIPAL (PAINEL + IMAGENS) ---
+col1, col2 = st.columns([1.5, 1], gap="large")
+
+with col1:
+    st.markdown("### 🧬 Painel de Informações e Diretrizes")
+    st.markdown(f"""
+    <div class="content-card">
+        <h3>Foco Atual: <span style="color: #00f2fe;">{st.session_state.last_topic}</span></h3>
+        <p style="color: #d1d5db; line-height: 1.6;">
+            Esta área exibe em tempo real o contexto da sua consulta com o personal trainer. 
+            Clique no botão flutuante no canto inferior direito para abrir a conversa, 
+            e veja as orientações e referências visuais atualizarem-se automaticamente aqui.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("### 📸 Referência Visual do Exercício")
+    st.markdown(f"""
+    <div class="content-card" style="text-align: center;">
+        <img src="{st.session_state.last_image}" style="width: 100%; border-radius: 12px; object-fit: cover; max-height: 280px; border: 1px solid rgba(0, 242, 254, 0.3);">
+        <p style="margin-top: 12px; font-size: 13px; color: #9ca3af;">Ilustração dinâmica baseada no último tópico consultado</p>
+    </div>
+    """, unsafe_allow_html=True)
