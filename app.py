@@ -8,22 +8,19 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- ESTILO CSS FUTURISTA E CORREÇÃO DO TEMA ESCURO ---
+# --- ESTILO CSS PARA O WIDGET FLUTUANTE ESTILO WHATSAPP/SUPORTE ---
 st.markdown("""
 <style>
-    /* Fundo geral escuro da aplicação */
     .stApp {
         background-color: #0b0f19;
         color: #f3f4f6;
     }
     
-    /* Forçar fundo escuro e texto claro na barra lateral */
     [data-testid="stSidebar"] {
         background-color: #111827;
         color: #f3f4f6;
     }
     
-    /* Estilizar inputs de texto para combinar com o design futurista */
     .stTextInput input, .stTextArea textarea {
         background-color: #1f2937 !important;
         color: #ffffff !important;
@@ -31,7 +28,6 @@ st.markdown("""
         border-radius: 8px;
     }
     
-    /* Estilo dos cards de conteúdo principal */
     .content-card {
         background: rgba(17, 24, 39, 0.7);
         border: 1px solid rgba(59, 130, 246, 0.2);
@@ -44,7 +40,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL (CONFIGURAÇÕES DA API) ---
+# --- BARRA LATERAL (CONFIGURAÇÕES DA API, ENDPOINT E MODELO) ---
 with st.sidebar:
     st.markdown("## ⚙️ Configurações da IA")
     api_key = st.text_input("Chave da API (API Key):", type="password", placeholder="sk-...")
@@ -60,14 +56,14 @@ with st.sidebar:
     )
     st.divider()
     st.markdown("### 🤖 Persona Ativa")
-    st.info("Assistente configurado estritamente como **Personal Trainer Profissional** de elite.")
+    st.info("Assistente configurado como **Personal Trainer Profissional**.")
 
 # --- ESTADO DA SESSÃO ---
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
             "role": "system", 
-            "content": "Você é um Personal Trainer profissional, experiente, motivador e técnico. Seu objetivo é resolver qualquer dúvida sobre treinos, exercícios, biomecânica, periodização e nutrição esportiva básica. Responda com autoridade, clareza e foco em resultados seguros."
+            "content": "Você é um Personal Trainer profissional, experiente, motivador e técnico. Seu objetivo é resolver qualquer dúvida sobre treinos, exercícios, biomecânica e periodização."
         }
     ]
 
@@ -81,25 +77,37 @@ st.markdown("<h1 style='text-align: center; background: linear-gradient(to right
 st.markdown("<p style='text-align: center; color: #9ca3af;'>Plataforma inteligente de treinamento biomecânico e consultoria física.</p>", unsafe_allow_html=True)
 st.divider()
 
-# --- BOTÃO POP-UP FLUTUANTE (ESTILO CHAT DO WHATSAPP) ---
-col_chat_btn, col_spacer = st.columns([1, 4])
-with col_chat_btn:
-    chat_popover = st.popover("💬 Abrir Chat com Personal", help="Clique para abrir a conversa")
-
-with chat_popover:
-    st.markdown("### 🦾 Chat do Personal Trainer")
-    st.markdown("Tire suas dúvidas sobre exercícios e treinos em tempo real.")
+# --- WIDGET POP-UP FLUTUANTE (CANTO INFERIOR DIREITO) ---
+# Usamos o st.popover que cria o botão e abre a janela flutuante customizada
+with st.popover("💬 Chat Personal Online"):
+    st.markdown("### 🎧 Personal Trainer Online")
+    st.markdown("<p style='font-size: 12px; color: #10b981; margin-top: -15px;'>● online agora</p>", unsafe_allow_html=True)
+    st.divider()
     
-    # Exibir histórico de conversas (ignorando a mensagem system)
-    for message in st.session_state.messages:
-        if message["role"] != "system":
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+    # Container com barra de rolagem para as mensagens dentro do pop-up
+    chat_container = st.container(height=350)
+    
+    with chat_container:
+        for message in st.session_state.messages:
+            if message["role"] != "system":
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
 
-    # Caixa de input do chat dentro do pop-up
-    if prompt := st.chat_input("Ex: Como executar corretamente o agachamento livre?"):
+    # Input fixo na parte inferior do pop-up
+    if prompt := st.chat_input("Digite sua dúvida ou exercício..."):
         if not api_key:
-            st.error("Insira sua Chave de API na barra lateral esquerda!")
+            st.error("Insira sua Chave de API na barra lateral!")
         else:
-            # Adiciona mensagem do usuário
             st.session_state.messages.append({"role": "user", "content": prompt})
+            with chat_container:
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+
+            with chat_container:
+                with st.chat_message("assistant"):
+                    message_placeholder = st.empty()
+                    message_placeholder.markdown("Analisando...")
+                    
+                    try:
+                        client = OpenAI(api_key=api_key, base_url=endpoint)
+                        response = client.chat.completions.create(
