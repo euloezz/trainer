@@ -96,14 +96,4 @@ if "messages" not in st.session_state:
     ]
 
 if "last_topic" not in st.session_state:
-    st.session_state.last_topic = "Visão Geral de Alta Performance"
-if "last_image" not in st.session_state:
-    st.session_state.last_image = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000&auto=format&fit=crop"
-
-# --- INTERFACE PRINCIPAL DO SITE ---
-st.markdown("<h1 style='text-align: center; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>⚡ NEXUS FIT TRAINING</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #9ca3af;'>Plataforma inteligente de treinamento biomecânico e consultoria física.</p>", unsafe_allow_html=True)
-st.divider()
-
-# --- WIDGET POP-UP FLUTUANTE (COM FUNDO ESTILO WHATSAPP) ---
-with st.popover
+    st.session_state.last
