@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+from openai import AzureOpenAI
 
 # Configuração da Página
 st.set_page_config(
@@ -142,10 +142,11 @@ with st.popover("💬 Suporte de Personal Online"):
                     message_placeholder.markdown("Analisando...")
                     
                     try:
-                        client = OpenAI(
-                            api_key=api_key, 
-                            base_url=endpoint,
-                            default_query={"api-version": api_version} if api_version else None
+                        # Utilizando a classe nativa AzureOpenAI para direcionar corretamente as rotas do Azure
+                        client = AzureOpenAI(
+                            api_key=api_key,
+                            azure_endpoint=endpoint,
+                            api_version=api_version
                         )
                         response = client.chat.completions.create(
                             model=model_name,
