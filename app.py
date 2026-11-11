@@ -72,4 +72,59 @@ if "last_topic" not in st.session_state:
 if "last_image" not in st.session_state:
     st.session_state.last_image = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000&auto=format&fit=crop"
 
-# --- INTERFACE
+# --- INTERFACE PRINCIPAL (DESIGN FUTURISTA) ---
+st.markdown("<h1 style='text-align: center; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>⚡ NEXUS FIT TRAINING</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #9ca3af;'>Plataforma inteligente de treinamento biomecânico e consultoria física.</p>", unsafe_allow_html=True)
+st.divider()
+
+# --- WIDGET POP-UP FLUTUANTE (CANTO INFERIOR DIREITO) ---
+with st.popover("💬 Chat Personal Online"):
+    st.markdown("### 🎧 Personal Trainer Online")
+    st.markdown("<p style='font-size: 12px; color: #10b981; margin-top: -15px;'>● online agora</p>", unsafe_allow_html=True)
+    st.divider()
+    
+    chat_container = st.container(height=350)
+    
+    with chat_container:
+        for message in st.session_state.messages:
+            if message["role"] != "system":
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+
+    prompt = st.chat_input("Digite sua dúvida ou exercício...")
+    if prompt:
+        if not api_key:
+            st.error("Insira sua Chave de API na barra lateral!")
+        else:
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with chat_container:
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+
+            with chat_container:
+                with st.chat_message("assistant"):
+                    message_placeholder = st.empty()
+                    message_placeholder.markdown("Analisando...")
+                    
+                    try:
+                        client = OpenAI(api_key=api_key, base_url=endpoint)
+                        response = client.chat.completions.create(
+                            model=model_name,
+                            messages=st.session_state.messages,
+                            stream=True
+                        )
+                        
+                        full_response = ""
+                        for chunk in response:
+                            if chunk.choices[0].delta.content is not None:
+                                full_response += chunk.choices[0].delta.content
+                                message_placeholder.markdown(full_response + "▌")
+                        
+                        message_placeholder.markdown(full_response)
+                        st.session_state.messages.append({"role": "assistant", "content": full_response})
+                        
+                        # Atualiza dinamicamente o painel lateral de imagens/tópicos
+                        p_lower = prompt.lower()
+                        st.session_state.last_topic = prompt[:45] + "..."
+                        if "costas" in p_lower or "puxada" in p_lower or "dorsal" in p_lower:
+                            st.session_state.last_image = "
