@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- ESTILO CSS FUTURISTA + FUNDO ESTILO WHATSAPP NO POP-UP ---
+# --- ESTILO CSS FUTURISTA + FUNDO ESTILO WHATSAPP ---
 st.markdown("""
 <style>
     .stApp {
@@ -36,25 +36,6 @@ st.markdown("""
         backdrop-filter: blur(10px);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         margin-bottom: 20px;
-    }
-
-    /* Estilização para o Popover simular o widget flutuante */
-    [data-testid="stPopover"] {
-        position: fixed !important;
-        bottom: 25px !important;
-        right: 25px !important;
-        z-index: 999999 !important;
-    }
-    
-    [data-testid="stPopover"] > button {
-        background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%) !important;
-        color: #0b0f19 !important;
-        border-radius: 50px !important;
-        padding: 12px 24px !important;
-        font-weight: bold !important;
-        font-size: 15px !important;
-        box-shadow: 0 4px 20px rgba(0, 242, 254, 0.4) !important;
-        border: none !important;
     }
 
     /* Fundo estilo WhatsApp Dark Mode para o container do chat */
@@ -97,3 +78,8 @@ if "messages" not in st.session_state:
 
 if "last_topic" not in st.session_state:
     st.session_state.last_topic = "Visão Geral de Alta Performance"
+if "last_image" not in st.session_state:
+    st.session_state.last_image = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000&auto=format&fit=crop"
+
+# --- INTERFACE PRINCIPAL DO SITE ---
+st.markdown("<h1 style='text-align: center; background: linear-
