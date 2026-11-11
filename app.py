@@ -77,6 +77,4 @@ if "messages" not in st.session_state:
     ]
 
 if "last_topic" not in st.session_state:
-    st.session_state.last_topic = "Visão Geral de Alta Performance"
-if "last_image" not in st.session_state:
-    st.session_state.last_image = "
+    st
