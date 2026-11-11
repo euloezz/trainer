@@ -108,4 +108,54 @@ st.divider()
 # --- WIDGET POP-UP FLUTUANTE (COM FUNDO ESTILO WHATSAPP) ---
 with st.popover("💬 Suporte de Personal Online"):
     st.markdown("### 🦾 Chatbot Personal Trainer")
-    st.markdown("<p style='font-size: 12px; color: #
+    st.markdown('<p style="font-size: 12px; color: #10b981; margin-top: -10px;">● online agora</p>', unsafe_allow_html=True)
+    st.divider()
+    
+    # Container estilizado estilo WhatsApp
+    st.markdown('<div class="whatsapp-chat-bg">', unsafe_allow_html=True)
+    chat_container = st.container(height=350)
+    
+    with chat_container:
+        for message in st.session_state.messages:
+            if message["role"] != "system":
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    prompt = st.chat_input("Digite sua dúvida de treino...")
+    if prompt:
+        if not api_key:
+            st.error("Insira sua Chave de API na barra lateral!")
+        else:
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with chat_container:
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+
+            with chat_container:
+                with st.chat_message("assistant"):
+                    message_placeholder = st.empty()
+                    message_placeholder.markdown("Analisando...")
+                    
+                    try:
+                        client = OpenAI(api_key=api_key, base_url=endpoint)
+                        response = client.chat.completions.create(
+                            model=model_name,
+                            messages=st.session_state.messages,
+                            stream=True
+                        )
+                        
+                        full_response = ""
+                        for chunk in response:
+                            if chunk.choices[0].delta.content is not None:
+                                full_response += chunk.choices[0].delta.content
+                                message_placeholder.markdown(full_response + "▌")
+                        
+                        message_placeholder.markdown(full_response)
+                        st.session_state.messages.append({"role": "assistant", "content": full_response})
+                        
+                        # Atualiza dinamicamente o painel de imagens ao lado
+                        p_lower = prompt.lower()
+                        st.session_state.last_topic = prompt[:45] + "..."
+                        if "costas" in p_lower or "puxada" in p_lower or "dorsal" in p_lower:
+                            st.session_state.last_image = "
