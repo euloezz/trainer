@@ -3,10 +3,61 @@ from openai import OpenAI
 
 # Configuração da Página
 st.set_page_config(
-    page_title="FitAI - Personal Trainer",
+    page_title="FitAI - Personal Trainer Futurista",
     page_icon="💪",
     layout="wide"
 )
+
+# --- ESTILO CSS PARA O WIDGET FLUTUANTE ESTILO WHATSAPP (CANTO INFERIOR DIREITO) ---
+st.markdown("""
+<style>
+    .stApp {
+        background-color: #0b0f19;
+        color: #f3f4f6;
+    }
+    
+    [data-testid="stSidebar"] {
+        background-color: #111827;
+        color: #f3f4f6;
+    }
+    
+    .stTextInput input, .stTextArea textarea {
+        background-color: #1f2937 !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        border-radius: 8px;
+    }
+    
+    .content-card {
+        background: rgba(17, 24, 39, 0.7);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        margin-bottom: 20px;
+    }
+
+    /* Estilização para o Popover simular o widget flutuante do WhatsApp */
+    [data-testid="stPopover"] {
+        position: fixed !important;
+        bottom: 25px !important;
+        right: 25px !important;
+        z-index: 999999 !important;
+    }
+    
+    [data-testid="stPopover"] > button {
+        background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%) !important;
+        color: #0b0f19 !important;
+        border-radius: 50px !important;
+        padding: 12px 24px !important;
+        font-weight: bold !important;
+        font-size: 15px !important;
+        box-shadow: 0 4px 20px rgba(0, 242, 254, 0.4) !important;
+        border: none !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # --- BARRA LATERAL (CONFIGURAÇÕES DA API) ---
 with st.sidebar:
@@ -20,11 +71,11 @@ with st.sidebar:
     model_name = st.text_input(
         "Nome do Modelo:", 
         value="gpt-4o-mini",
-        help="Ex: gpt-4o, llama-3, etc."
+        help="Ex: gpt-4o-mini, gpt-4o, etc."
     )
     st.divider()
     st.markdown("### 🤖 Persona Ativa")
-    st.info("Assistente configurado como **Personal Trainer Profissional**.")
+    st.info("Assistente configurado estritamente como **Personal Trainer Profissional** de elite.")
 
 # --- ESTADO DA SESSÃO ---
 if "messages" not in st.session_state:
@@ -40,19 +91,18 @@ if "last_topic" not in st.session_state:
 if "last_image" not in st.session_state:
     st.session_state.last_image = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000&auto=format&fit=crop"
 
-# --- INTERFACE PRINCIPAL ---
-st.title("⚡ NEXUS FIT TRAINING")
-st.markdown("Plataforma inteligente de treinamento biomecânico e consultoria física.")
+# --- INTERFACE PRINCIPAL DO SITE ---
+st.markdown("<h1 style='text-align: center; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>⚡ NEXUS FIT TRAINING</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #9ca3af;'>Plataforma inteligente de treinamento biomecânico e consultoria física.</p>", unsafe_allow_html=True)
 st.divider()
 
-# Layout em duas colunas principais para garantir visibilidade total
-col_chat, col_info = st.columns([1, 1], gap="large")
-
-# --- COLUNA DA ESQUERDA: CHATBOT ---
-with col_chat:
-    st.subheader("💬 Chatbot Personal Trainer")
+# --- WIDGET POP-UP FLUTUANTE (FIXO NO CANTO INFERIOR DIREITO VIA CSS) ---
+with st.popover("💬 Suporte de Personal Online"):
+    st.markdown("### 🦾 Chatbot Personal Trainer")
+    st.markdown("<p style='font-size: 12px; color: #10b981; margin-top: -10px;'>● online agora</p>", unsafe_allow_html=True)
+    st.divider()
     
-    chat_container = st.container(height=450)
+    chat_container = st.container(height=350)
     
     with chat_container:
         for message in st.session_state.messages:
@@ -60,10 +110,10 @@ with col_chat:
                 with st.chat_message(message["role"]):
                     st.markdown(message["content"])
 
-    prompt = st.chat_input("Digite sua dúvida sobre treino ou exercício...")
+    prompt = st.chat_input("Digite sua dúvida de treino...")
     if prompt:
         if not api_key:
-            st.error("Insira sua Chave de API na barra lateral esquerda!")
+            st.error("Insira sua Chave de API na barra lateral!")
         else:
             st.session_state.messages.append({"role": "user", "content": prompt})
             with chat_container:
@@ -92,7 +142,7 @@ with col_chat:
                         message_placeholder.markdown(full_response)
                         st.session_state.messages.append({"role": "assistant", "content": full_response})
                         
-                        # Atualiza dinamicamente o painel lateral com base na conversa
+                        # Atualiza dinamicamente o painel de imagens ao lado
                         p_lower = prompt.lower()
                         st.session_state.last_topic = prompt[:45] + "..."
                         if "costas" in p_lower or "puxada" in p_lower or "dorsal" in p_lower:
@@ -107,12 +157,27 @@ with col_chat:
                     except Exception as e:
                         message_placeholder.error(f"Erro na API: {e}")
 
-# --- COLUNA DA DIREITA: PAINEL DE INFORMAÇÕES E IMAGENS ---
-with col_info:
-    st.subheader("🧬 Painel Dinâmico & Referência")
-    st.info(f"**Foco Atual:** {st.session_state.last_topic}")
-    st.markdown("""
-    Esta área exibe em tempo real o contexto da sua consulta com o personal trainer. 
-    À medida que conversa, as orientações chave e as referências visuais adaptam-se automaticamente ao exercício discutido.
-    """)
-    st.image(st.session_state.last_image, use_container_width=True, caption="Ilustração técnica do exercício atual")
+# --- ÁREA DINÂMICA PRINCIPAL (PAINEL + IMAGENS) ---
+col1, col2 = st.columns([1.5, 1], gap="large")
+
+with col1:
+    st.markdown("### 🧬 Painel de Informações e Diretrizes")
+    st.markdown(f"""
+    <div class="content-card">
+        <h3>Foco Atual: <span style="color: #00f2fe;">{st.session_state.last_topic}</span></h3>
+        <p style="color: #d1d5db; line-height: 1.6;">
+            Esta área exibe em tempo real o contexto da sua consulta com o personal trainer. 
+            Clique no botão flutuante no canto inferior direito para abrir a conversa, 
+            e veja as orientações e referências visuais atualizarem-se automaticamente aqui.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("### 📸 Referência Visual do Exercício")
+    st.markdown(f"""
+    <div class="content-card" style="text-align: center;">
+        <img src="{st.session_state.last_image}" style="width: 100%; border-radius: 12px; object-fit: cover; max-height: 280px; border: 1px solid rgba(0, 242, 254, 0.3);">
+        <p style="margin-top: 12px; font-size: 13px; color: #9ca3af;">Ilustração dinâmica baseada no último tópico consultado</p>
+    </div>
+    """, unsafe_allow_html=True)
