@@ -103,33 +103,3 @@ with chat_popover:
         else:
             # Adiciona mensagem do usuário
             st.session_state.messages.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
-
-            # Resposta da IA
-            with st.chat_message("assistant"):
-                message_placeholder = st.empty()
-                message_placeholder.markdown("Analisando biomecânica...")
-                
-                try:
-                    client = OpenAI(api_key=api_key, base_url=endpoint)
-                    response = client.chat.completions.create(
-                        model=model_name,
-                        messages=st.session_state.messages,
-                        stream=True
-                    )
-                    
-                    full_response = ""
-                    for chunk in response:
-                        if chunk.choices[0].delta.content is not None:
-                            full_response += chunk.choices[0].delta.content
-                            message_placeholder.markdown(full_response + "▌")
-                    
-                    message_placeholder.markdown(full_response)
-                    st.session_state.messages.append({"role": "assistant", "content": full_response})
-                    
-                    # Atualiza dinamicamente o painel principal com base no tema da conversa
-                    st.session_state.last_topic = prompt[:45] + "..."
-                    if "costas" in prompt.lower() or "puxada" in prompt.lower() or "dorsal" in prompt.lower():
-                        st.session_state.last_image = "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1000&auto=format&fit=crop"
-                    elif "perna" in prompt.lower() or "agach
