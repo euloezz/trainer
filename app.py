@@ -74,8 +74,4 @@ if "last_image" not in st.session_state:
 
 # --- INTERFACE PRINCIPAL (DESIGN FUTURISTA) ---
 st.markdown("<h1 style='text-align: center; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>⚡ NEXUS FIT TRAINING</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #9ca3af;'>Plataforma inteligente de treinamento biomecânico e consultoria física.</p>", unsafe_allow_html=True)
-st.divider()
-
-# --- WIDGET POP-UP FLUTUANTE (CANTO INFERIOR DIREITO) ---
-with st.popover("💬 Chat Personal Online"):
+st.markdown("<p style
