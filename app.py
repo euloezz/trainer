@@ -74,4 +74,62 @@ if "messages" not in st.session_state:
 if "last_topic" not in st.session_state:
     st.session_state.last_topic = "Visão Geral de Alta Performance"
 if "last_image" not in st.session_state:
-    st.session_state.last_image = "
+    st.session_state.last_image = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000&auto=format&fit=crop"
+
+# --- INTERFACE PRINCIPAL (DESIGN FUTURISTA) ---
+st.markdown("<h1 style='text-align: center; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>⚡ NEXUS FIT TRAINING</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #9ca3af;'>Plataforma inteligente de treinamento biomecânico e consultoria física.</p>", unsafe_allow_html=True)
+st.divider()
+
+# --- BOTÃO POP-UP FLUTUANTE (ESTILO CHAT DO WHATSAPP) ---
+col_chat_btn, col_spacer = st.columns([1, 4])
+with col_chat_btn:
+    chat_popover = st.popover("💬 Abrir Chat com Personal", help="Clique para abrir a conversa")
+
+with chat_popover:
+    st.markdown("### 🦾 Chat do Personal Trainer")
+    st.markdown("Tire suas dúvidas sobre exercícios e treinos em tempo real.")
+    
+    # Exibir histórico de conversas (ignorando a mensagem system)
+    for message in st.session_state.messages:
+        if message["role"] != "system":
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+    # Caixa de input do chat dentro do pop-up
+    if prompt := st.chat_input("Ex: Como executar corretamente o agachamento livre?"):
+        if not api_key:
+            st.error("Insira sua Chave de API na barra lateral esquerda!")
+        else:
+            # Adiciona mensagem do usuário
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
+
+            # Resposta da IA
+            with st.chat_message("assistant"):
+                message_placeholder = st.empty()
+                message_placeholder.markdown("Analisando biomecânica...")
+                
+                try:
+                    client = OpenAI(api_key=api_key, base_url=endpoint)
+                    response = client.chat.completions.create(
+                        model=model_name,
+                        messages=st.session_state.messages,
+                        stream=True
+                    )
+                    
+                    full_response = ""
+                    for chunk in response:
+                        if chunk.choices[0].delta.content is not None:
+                            full_response += chunk.choices[0].delta.content
+                            message_placeholder.markdown(full_response + "▌")
+                    
+                    message_placeholder.markdown(full_response)
+                    st.session_state.messages.append({"role": "assistant", "content": full_response})
+                    
+                    # Atualiza dinamicamente o painel principal com base no tema da conversa
+                    st.session_state.last_topic = prompt[:45] + "..."
+                    if "costas" in prompt.lower() or "puxada" in prompt.lower() or "dorsal" in prompt.lower():
+                        st.session_state.last_image = "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1000&auto=format&fit=crop"
+                    elif "perna" in prompt.lower() or "agach
