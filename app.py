@@ -79,7 +79,4 @@ if "messages" not in st.session_state:
 if "last_topic" not in st.session_state:
     st.session_state.last_topic = "Visão Geral de Alta Performance"
 if "last_image" not in st.session_state:
-    st.session_state.last_image = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000&auto=format&fit=crop"
-
-# --- INTERFACE PRINCIPAL DO SITE ---
-st.markdown("<h1 style='text-align: center; background: linear-
+    st.session_state.last_image = "
