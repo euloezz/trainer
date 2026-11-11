@@ -3,42 +3,10 @@ from openai import OpenAI
 
 # Configuração da Página
 st.set_page_config(
-    page_title="FitAI - Personal Trainer Futurista",
+    page_title="FitAI - Personal Trainer",
     page_icon="💪",
     layout="wide"
 )
-
-# --- ESTILO CSS PARA O WIDGET FLUTUANTE E TEMA ESCURO ---
-st.markdown("""
-<style>
-    .stApp {
-        background-color: #0b0f19;
-        color: #f3f4f6;
-    }
-    
-    [data-testid="stSidebar"] {
-        background-color: #111827;
-        color: #f3f4f6;
-    }
-    
-    .stTextInput input, .stTextArea textarea {
-        background-color: #1f2937 !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(59, 130, 246, 0.3) !important;
-        border-radius: 8px;
-    }
-    
-    .content-card {
-        background: rgba(17, 24, 39, 0.7);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-radius: 16px;
-        padding: 24px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        margin-bottom: 20px;
-    }
-</style>
-""", unsafe_allow_html=True)
 
 # --- BARRA LATERAL (CONFIGURAÇÕES DA API) ---
 with st.sidebar:
@@ -72,4 +40,79 @@ if "last_topic" not in st.session_state:
 if "last_image" not in st.session_state:
     st.session_state.last_image = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000&auto=format&fit=crop"
 
-# --- INTERFACE PRINCIPAL (DESIGN FUTUR
+# --- INTERFACE PRINCIPAL ---
+st.title("⚡ NEXUS FIT TRAINING")
+st.markdown("Plataforma inteligente de treinamento biomecânico e consultoria física.")
+st.divider()
+
+# Layout em duas colunas principais para garantir visibilidade total
+col_chat, col_info = st.columns([1, 1], gap="large")
+
+# --- COLUNA DA ESQUERDA: CHATBOT ---
+with col_chat:
+    st.subheader("💬 Chatbot Personal Trainer")
+    
+    chat_container = st.container(height=450)
+    
+    with chat_container:
+        for message in st.session_state.messages:
+            if message["role"] != "system":
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+
+    prompt = st.chat_input("Digite sua dúvida sobre treino ou exercício...")
+    if prompt:
+        if not api_key:
+            st.error("Insira sua Chave de API na barra lateral esquerda!")
+        else:
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with chat_container:
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+
+            with chat_container:
+                with st.chat_message("assistant"):
+                    message_placeholder = st.empty()
+                    message_placeholder.markdown("Analisando...")
+                    
+                    try:
+                        client = OpenAI(api_key=api_key, base_url=endpoint)
+                        response = client.chat.completions.create(
+                            model=model_name,
+                            messages=st.session_state.messages,
+                            stream=True
+                        )
+                        
+                        full_response = ""
+                        for chunk in response:
+                            if chunk.choices[0].delta.content is not None:
+                                full_response += chunk.choices[0].delta.content
+                                message_placeholder.markdown(full_response + "▌")
+                        
+                        message_placeholder.markdown(full_response)
+                        st.session_state.messages.append({"role": "assistant", "content": full_response})
+                        
+                        # Atualiza dinamicamente o painel lateral com base na conversa
+                        p_lower = prompt.lower()
+                        st.session_state.last_topic = prompt[:45] + "..."
+                        if "costas" in p_lower or "puxada" in p_lower or "dorsal" in p_lower:
+                            st.session_state.last_image = "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1000&auto=format&fit=crop"
+                        elif "perna" in p_lower or "agachamento" in p_lower or "quadriceps" in p_lower:
+                            st.session_state.last_image = "https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=1000&auto=format&fit=crop"
+                        elif "peito" in p_lower or "supino" in p_lower:
+                            st.session_state.last_image = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop"
+                        
+                        st.rerun()
+                        
+                    except Exception as e:
+                        message_placeholder.error(f"Erro na API: {e}")
+
+# --- COLUNA DA DIREITA: PAINEL DE INFORMAÇÕES E IMAGENS ---
+with col_info:
+    st.subheader("🧬 Painel Dinâmico & Referência")
+    st.info(f"**Foco Atual:** {st.session_state.last_topic}")
+    st.markdown("""
+    Esta área exibe em tempo real o contexto da sua consulta com o personal trainer. 
+    À medida que conversa, as orientações chave e as referências visuais adaptam-se automaticamente ao exercício discutido.
+    """)
+    st.image(st.session_state.last_image, use_container_width=True, caption="Ilustração técnica do exercício atual")
