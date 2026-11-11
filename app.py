@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- ESTILO CSS PARA O WIDGET FLUTUANTE ESTILO WHATSAPP/SUPORTE ---
+# --- ESTILO CSS PARA O WIDGET FLUTUANTE E TEMA ESCURO ---
 st.markdown("""
 <style>
     .stApp {
@@ -40,7 +40,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL (CONFIGURAÇÕES DA API, ENDPOINT E MODELO) ---
+# --- BARRA LATERAL (CONFIGURAÇÕES DA API) ---
 with st.sidebar:
     st.markdown("## ⚙️ Configurações da IA")
     api_key = st.text_input("Chave da API (API Key):", type="password", placeholder="sk-...")
@@ -78,36 +78,4 @@ st.markdown("<p style='text-align: center; color: #9ca3af;'>Plataforma inteligen
 st.divider()
 
 # --- WIDGET POP-UP FLUTUANTE (CANTO INFERIOR DIREITO) ---
-# Usamos o st.popover que cria o botão e abre a janela flutuante customizada
 with st.popover("💬 Chat Personal Online"):
-    st.markdown("### 🎧 Personal Trainer Online")
-    st.markdown("<p style='font-size: 12px; color: #10b981; margin-top: -15px;'>● online agora</p>", unsafe_allow_html=True)
-    st.divider()
-    
-    # Container com barra de rolagem para as mensagens dentro do pop-up
-    chat_container = st.container(height=350)
-    
-    with chat_container:
-        for message in st.session_state.messages:
-            if message["role"] != "system":
-                with st.chat_message(message["role"]):
-                    st.markdown(message["content"])
-
-    # Input fixo na parte inferior do pop-up
-    if prompt := st.chat_input("Digite sua dúvida ou exercício..."):
-        if not api_key:
-            st.error("Insira sua Chave de API na barra lateral!")
-        else:
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            with chat_container:
-                with st.chat_message("user"):
-                    st.markdown(prompt)
-
-            with chat_container:
-                with st.chat_message("assistant"):
-                    message_placeholder = st.empty()
-                    message_placeholder.markdown("Analisando...")
-                    
-                    try:
-                        client = OpenAI(api_key=api_key, base_url=endpoint)
-                        response = client.chat.completions.create(
