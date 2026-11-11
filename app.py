@@ -80,12 +80,12 @@ with st.sidebar:
     model_name = st.text_input(
         "Nome do Deployment / Modelo:", 
         value="gpt-4.1-mini",
-        help="Insira exatamente o nome do deployment criado no Foundry (ex: gpt-4.1-mini)"
+        help="Insira exatamente o nome do deployment criado no Foundry"
     )
     api_version = st.text_input(
         "Versão da API (Azure):",
         value="2024-08-01-preview",
-        help="Versão da API do Azure (ex: 2024-08-01-preview ou similar)"
+        help="Versão da API do Azure"
     )
     st.divider()
     st.markdown("### 🤖 Persona Ativa")
@@ -102,4 +102,44 @@ if "messages" not in st.session_state:
 
 if "last_topic" not in st.session_state:
     st.session_state.last_topic = "Visão Geral de Alta Performance"
-if "last_image" not in st.session_state
+if "last_image" not in st.session_state:
+    st.session_state.last_image = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000&auto=format&fit=crop"
+
+# --- INTERFACE PRINCIPAL DO SITE ---
+st.markdown("<h1 style='text-align: center; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>⚡ NEXUS FIT TRAINING</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #9ca3af;'>Plataforma inteligente de treinamento biomecânico e consultoria física.</p>", unsafe_allow_html=True)
+st.divider()
+
+# --- WIDGET POP-UP FLUTUANTE (FIXO NO CANTO INFERIOR DIREITO VIA CSS) ---
+with st.popover("💬 Suporte de Personal Online"):
+    st.markdown("### 🦾 Chatbot Personal Trainer")
+    st.markdown("<p style='font-size: 12px; color: #10b981; margin-top: -10px;'>● online agora</p>", unsafe_allow_html=True)
+    st.divider()
+    
+    st.markdown('<div class="whatsapp-chat-bg">', unsafe_allow_html=True)
+    chat_container = st.container(height=350)
+    
+    with chat_container:
+        for message in st.session_state.messages:
+            if message["role"] != "system":
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    prompt = st.chat_input("Digite sua dúvida de treino...")
+    if prompt:
+        if not api_key:
+            st.error("Insira sua Chave de API na barra lateral!")
+        else:
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with chat_container:
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+
+            with chat_container:
+                with st.chat_message("assistant"):
+                    message_placeholder = st.empty()
+                    message_placeholder.markdown("Analisando...")
+                    
+                    try:
+                        client
